@@ -1,0 +1,11 @@
+version: '3'
+services:
+  app:
+    container_name: realtime-app
+    build: .
+    entrypoint: npm
+    command: start
+    ports:
+      - 8000:3000
+    volumes:
+      - .:/workspace

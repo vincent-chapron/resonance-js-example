@@ -1,0 +1,51 @@
+doctype html
+html(lang="fr")
+    head
+        meta(charset="utf8")
+        meta(http-equiv="Content-Language" content="fr")
+        meta(name="viewport" content="initial-scale=1, maximum-scale=1")
+        title ResonanceJS
+        style.
+            .mouse {
+                position: fixed;
+                width: 10px;
+                height: 10px;
+                background-color: royalblue;
+                display: none;
+                transform: translateX(-50%) translateY(-50%);
+            }
+    body
+        h1 ResonanceJS Example
+        div.
+            Open 2 windows and move your cursor !
+        script(src="/socket.io/socket.io.js")
+        script(src="https://code.jquery.com/jquery-3.2.1.min.js"
+               integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+               crossorigin="anonymous")
+        script.
+            (function($){
+                let socket = io();
+                let mouses = {};
+
+                socket.on('event:disconnect', data => {
+                    let elem = $(`#mouse-${data.id}`);
+                    if (elem) elem.remove();
+                });
+
+                socket.on('event:mousemove', data => {
+                    let elem = null;
+                    if (!mouses[data.id]) {
+                        elem = $('<div>');
+                        elem.addClass('mouse').attr('id', `mouse-${data.id}`);
+                        $('body').append(elem);
+                    } else {
+                        elem = $(`#mouse-${data.id}`);
+                    }
+                    mouses[data.id] = {x: data.x, y: data.y};
+                    elem.show().css('top', `${data.y}%`).css('left', `${data.x}%`);
+                });
+
+                $(document).on('mousemove', e => {
+                    socket.emit('mouse:move', {x: e.pageX / $(document).width() * 100, y: e.pageY / $(document).height() * 100});
+                });
+            })(jQuery);
